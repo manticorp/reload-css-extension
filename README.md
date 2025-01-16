@@ -1,4 +1,4 @@
-# Chrome Reload CSS extension
+<h1><img alt="icon" src="/images/icon-32.png"> Easy CSS Reloader</h1>
 
 Reload CSS with the click of a button.
 
