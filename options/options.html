@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>CSS Easy Reload Options</title>
+    <style>
+      :root {
+        --font-stack: Inter, Helvetica, Aptos, Segoe UI, Arial, sans-serif;
+      }
+      body {
+        font-family: var(--font-stack);
+        font-size: 0.8rem;
+      }
+      .logo {
+        display: flex;
+        gap: 1rem;
+      }
+      .logo img {
+        width: 64px;
+        height: 64px;
+      }
+      .logo .title {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+      }
+      .logo .title h1, .logo .title h2 {
+        margin: 0;
+      }
+      input {
+        font-family: var(--font-stack);
+      }
+      input[type="text"] {
+        padding: 0.35rem 0.5rem;
+        margin: 0.2rem 0;
+      }
+      input[type="text"]:user-invalid {
+        color: red;
+        outline: 1px solid red;
+        box-shadow: 0 0 5px rgba(255,0,0,1);
+      }
+      input + .help {
+        font-size: 0.7rem;
+        color: light-dark(#666, #bbb);
+      }
+      input:valid + .help {
+        display: none;
+      }
+      input:not(:user-valid) + .help {
+        display: block;
+      }
+      section h1:first-child,
+      section h2:first-child,
+      section h3:first-child {
+        margin: 1.2rem 0 0.25rem 0;
+      }
+      section:not(:last-child),
+      .form-input:not(:last-child) {
+        margin: 0 0 1rem 0;
+      }
+      .form-input {
+        display: flex;
+        flex-direction: column;
+        max-width: 420px;
+      }
+      .form-input label {
+        font-weight: bold;
+        color: #334355;
+      }
+      .shortcuts {
+        border-collapse: collapse;
+      }
+      .shortcuts td,
+      .shortcuts th {
+        padding: 0.5rem;
+        text-align: left;
+      }
+      .shortcuts tr:nth-child(even) {
+        background: rgba(0,0,0,0.025);
+      }
+      .shortcuts tr:nth-child(odd) {
+        background: rgba(0,0,0,0.05);
+      }
+      button {
+        cursor: pointer;
+        font-family: var(--font-stack);
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+      }
+      #status {
+        box-sizing: border-box;
+        padding: 0.5rem 0 0;
+        height: 1.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <img src="../images/icon-64.png" width=64 height=64>
+        <div class="title">
+          <h1>CSS Easy Reload</h1>
+          <h2>Options</h2>
+        </div>
+      </div>
+    </header>
+    <main>
+      <section>
+        <h3>Keyboard Shortcuts</h3>
+        <p>To customise keyboard shortcuts, please visit <a href="chrome://extensions/shortcuts">the chrome shortcuts page.</a></p>
+        <p>The defaults are:</p>
+        <table class="shortcuts">
+          <tr>
+            <th>Refresh Once</th>
+            <td><kbd>Ctrl</kbd>+<kbd>Q</kbd></td>
+          </tr>
+          <tr>
+            <th>Toggle Auto Refresh</th>
+            <td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Q</kbd></td>
+          </tr>
+        </table>
+      </section>
+      <section>
+        <h3>Settings</h3>
+        <div class="form-input">
+          <label>Auto Refresh time</label>
+          <input id="auto_refresh_timout" type="text" pattern="[0-9]+[0-9.]* *(ms|milliseconds?|s|seconds?|m|minutes?|h|hours?)?">
+          <span class="help">Number followed by optional unit (ms/s/m/h), default seconds</span>
+        </div>
+        <button id="save">💾 Save Settings</button>
+        <div id="status"></div>
+      </section>
+    </main>
+
+    <script src="options.js"></script>
+  </body>
+</html>

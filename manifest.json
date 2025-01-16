@@ -2,7 +2,7 @@
   "name": "CSS Easy Reload",
   "description": "Reload CSS with the touch of a button, or keyboard shortcut, without flashing.",
   "author": "manticorp1234@gmail.com",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "manifest_version": 3,
   "action": {
     "default_icon": "images/icon-32.png"
@@ -20,9 +20,20 @@
         "default": "Ctrl+Q",
         "mac": "Command+Q"
       }
+    },
+    "toggle-autorefresh": {
+      "description": "Start / Stop Auto Page Refresh",
+      "suggested_key": {
+        "default": "Ctrl+Shift+Q",
+        "mac": "Command+Shift+Q"
+      }
     }
   },
-  "permissions": ["activeTab", "scripting"],
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": false
+  },
+  "permissions": ["activeTab", "scripting", "storage"],
   "background": {
     "service_worker": "scripts/background.js"
   }
