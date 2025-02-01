@@ -1,7 +1,10 @@
+const DEBUG = false;
+
 chrome.runtime.onInstalled.addListener(() => {
   chrome.action.setBadgeText({
     text: "",
   });
+  setNumTimesUsed(0);
 });
 
 async function refreshCss() {
@@ -222,6 +225,28 @@ async function toggleAutoRefreshOn(tab, autoRefreshTimeout) {
   }, time);
 }
 
+async function getNumTimesUsed() {
+  return chrome.storage.sync.get({ numTimesUsed: 0 }).then(({ numTimesUsed }) => numTimesUsed);
+}
+
+async function setNumTimesUsed(numTimesUsed) {
+  return chrome.storage.sync.set({ numTimesUsed });
+}
+
+async function incrementNumTimesUsed() {
+  const numTimesUsed = await getNumTimesUsed();
+  await setNumTimesUsed(numTimesUsed + 1);
+  return numTimesUsed + 1;
+}
+
+async function registerUsage() {
+  const numTimesUsed = await incrementNumTimesUsed();
+  console.log(`Used ${numTimesUsed} times`);
+  if (numTimesUsed === 5 || DEBUG) {
+    chrome.tabs.create({url: 'page/rate.html'});
+  }
+}
+
 chrome.commands.onCommand.addListener(async (command) => {
   if (command === 'toggle-autorefresh') {
     console.log('Toggling auto refresh');
@@ -236,9 +261,11 @@ chrome.commands.onCommand.addListener(async (command) => {
         await toggleAutoRefresh(tab, autoRefreshTimeout);
       }
     );
+    registerUsage();
   }
 });
 
 chrome.action.onClicked.addListener(async (tab) => {
   const result = await refreshTab(tab);
+  registerUsage();
 });

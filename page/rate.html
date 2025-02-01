@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="theme-color" content="#fafafa">
+    <title>CSS Easy Reload - Thank you!</title>
+    <style>
+      :root {
+        --font-stack: Inter, Helvetica, Aptos, Segoe UI, Arial, sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: var(--font-stack);
+        font-size: 0.9rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0;
+        padding-top: 1rem;
+        min-height: 100vh;
+        background: rgb(210,210,210);
+        background: linear-gradient(0deg, rgb(240,240,240) 0%, rgb(250,250,250) 50%);
+      }
+      #main-container {
+        margin: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+      }
+      .logo {
+        display: flex;
+        gap: 1rem;
+      }
+      .logo img {
+        width: 64px;
+        height: 64px;
+      }
+      .logo .title {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+      }
+      .logo .title h1,
+      .logo .title h2,
+      .logo .title h3 {
+        margin: 0;
+      }
+      main {
+        display: flex;
+        gap: 1.5rem;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      main section {
+        padding: 1rem 1.5rem;
+        width: 100%;
+        background: #fff;
+        border-radius: 4px;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      }
+      main section h3:first-child {
+        margin-top: 0;
+      }
+      .has-text-centered {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main-container">
+      <header>
+        <div class="logo">
+          <img src="../images/icon-64.png" width=64 height=64>
+          <div class="title">
+            <h1>CSS Easy Reload</h1>
+            <h3>Thank you for using the extension</h3>
+          </div>
+        </div>
+      </header>
+      <main>
+        <section>
+          <h3>Feedback</h3>
+          <ul>
+            <li>Are you enjoying the extension?</li>
+            <li>Have you found it useful?</li>
+            <li>Are there ways we can improve?</li>
+          </ul>
+          <p>Consider <a href="https://chromewebstore.google.com/detail/css-easy-reload/gdneaopkkdfjgifnadmghbfignnnmhaa" target="_blank">leaving a review</a> on the extension page.</p>
+          <p>Every review helps 😊 spread the word!</p>
+        </section>
+        <section>
+          <h3>Trouble</h3>
+          <ul>
+            <li>Issues with the extension?</li>
+            <li>Not working as expected?</li>
+            <li>Are there ways we can improve?</li>
+          </ul>
+          <p><a href="https://github.com/manticorp/reload-css-extension/issues" target="_blank">Report any issues here</a> and we'll try to fix them.</p>
+          <p>Thank you!</p>
+        </section>
+        <section>
+          <h3>Love Us</h3>
+          <ul>
+            <li>Do you <em>love</em> the extension?</li>
+            <li>Do you use it every day?</li>
+            <li>Does it make your life easier?</li>
+          </ul>
+          <p>Consider <a href="https://ko-fi.com/harrymustoeplayfair" target="_blank">supporting us on Ko-Fi</a>.</p>
+          <p class="has-text-centered">
+              <a href="https://ko-fi.com/harrymustoeplayfair" target="_blank">
+              <picture>
+                <img src="../images/support_me_on_kofi_badge_red.webp" width="180">
+              </picture>
+            </a>
+          </p>
+        </section>
+      </main>
+    </div>
+    <script src="options.js"></script>
+  </body>
+</html>

@@ -43,12 +43,6 @@
         font-size: 0.7rem;
         color: light-dark(#666, #bbb);
       }
-      input:valid + .help {
-        display: none;
-      }
-      input:not(:user-valid) + .help {
-        display: block;
-      }
       section h1:first-child,
       section h2:first-child,
       section h3:first-child {
@@ -89,8 +83,11 @@
       }
       #status {
         box-sizing: border-box;
-        padding: 0.5rem 0 0;
+        padding: 0 0 0;
         height: 1.5rem;
+      }
+      .has-text-centered {
+        text-align: center;
       }
     </style>
   </head>
@@ -128,6 +125,15 @@
           <span class="help">Number followed by optional unit (ms/s/m/h), default seconds</span>
         </div>
         <button id="save">💾 Save Settings</button>
+      </section>
+      <section>
+        <p class="has-text-centered">
+            <a href="https://ko-fi.com/harrymustoeplayfair" target="_blank">
+            <picture>
+              <img src="../images/support_me_on_kofi_red.webp" width="180">
+            </picture>
+          </a>
+        </p>
         <div id="status"></div>
       </section>
     </main>
