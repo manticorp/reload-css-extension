@@ -9,23 +9,7 @@
       body {
         font-family: var(--font-stack);
         font-size: 0.8rem;
-      }
-      .logo {
-        display: flex;
-        gap: 1rem;
-      }
-      .logo img {
-        width: 64px;
-        height: 64px;
-      }
-      .logo .title {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: flex-start;
-      }
-      .logo .title h1, .logo .title h2 {
-        margin: 0;
+        min-width: 520px;
       }
       input {
         font-family: var(--font-stack);
@@ -39,7 +23,7 @@
         outline: 1px solid red;
         box-shadow: 0 0 5px rgba(255,0,0,1);
       }
-      input + .help {
+      input + .help, textarea + .help, .input-container + .help {
         font-size: 0.7rem;
         color: light-dark(#666, #bbb);
       }
@@ -55,7 +39,10 @@
       .form-input {
         display: flex;
         flex-direction: column;
-        max-width: 420px;
+        max-width: 520px;
+      }
+      .form-input textarea {
+        min-height: 4rem;
       }
       .form-input label {
         font-weight: bold;
@@ -69,17 +56,23 @@
         padding: 0.5rem;
         text-align: left;
       }
-      .shortcuts tr:nth-child(even) {
-        background: rgba(0,0,0,0.025);
+      .shortcuts tr th {
+        background: rgba(0,0,0,0.15);
       }
-      .shortcuts tr:nth-child(odd) {
+      .shortcuts tr td {
         background: rgba(0,0,0,0.05);
+        min-width: 80px;
       }
       button {
         cursor: pointer;
         font-family: var(--font-stack);
         padding: 0.5rem 1rem;
         font-size: 0.9rem;
+      }
+      .input-container {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
       }
       #status {
         box-sizing: border-box;
@@ -92,15 +85,6 @@
     </style>
   </head>
   <body>
-    <header>
-      <div class="logo">
-        <img src="../images/icon-64.png" width=64 height=64>
-        <div class="title">
-          <h1>CSS Easy Reload</h1>
-          <h2>Options</h2>
-        </div>
-      </div>
-    </header>
     <main>
       <section>
         <h3>Keyboard Shortcuts</h3>
@@ -110,8 +94,6 @@
           <tr>
             <th>Refresh Once</th>
             <td><kbd>Ctrl</kbd>+<kbd>Q</kbd></td>
-          </tr>
-          <tr>
             <th>Toggle Auto Refresh</th>
             <td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Q</kbd></td>
           </tr>
@@ -121,8 +103,20 @@
         <h3>Settings</h3>
         <div class="form-input">
           <label>Auto Refresh time</label>
-          <input id="auto_refresh_timout" type="text" pattern="[0-9]+[0-9.]* *(ms|milliseconds?|s|seconds?|m|minutes?|h|hours?)?">
-          <span class="help">Number followed by optional unit (ms/s/m/h), default seconds</span>
+          <input id="auto_refresh_timout" type="text" pattern="[0-9]+[0-9.]* *(ms|milliseconds?|s|seconds?|m|minutes?|h|hours|d|days?)?">
+          <span class="help">Number followed by optional unit (ms/s/m/h/d), default milliseconds</span>
+        </div>
+        <div class="form-input">
+          <label>Blacklist</label>
+          <textarea id="blacklist"></textarea>
+          <span class="help">Any CSS files with this in the URL will not be refreshed.</span>
+        </div>
+        <div class="form-input">
+          <div class="input-container input-checkbox">
+            <input type="checkbox" name="quiet" id="quiet">
+            <label for="quiet">Quiet</label>
+          </div>
+          <span class="help">Whether to console.log progress or not</span>
         </div>
         <button id="save">💾 Save Settings</button>
       </section>
@@ -138,6 +132,6 @@
       </section>
     </main>
 
-    <script src="options.js"></script>
+    <script src="options.js" type="module"></script>
   </body>
 </html>

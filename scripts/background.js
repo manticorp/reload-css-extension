@@ -1,39 +1,110 @@
-const DEBUG = false;
+import Version from './version.js';
+import { parseTimeString } from './utils.js';
 
-chrome.runtime.onInstalled.addListener(() => {
+const DEBUG = false;
+const DEFAULT_BLACKLIST = [
+    'yui.yahooapis.com',
+    'ajax.googleapis.com',
+    'fonts.googleapis.com',
+    'ajax.aspnetcdn.com',
+    'ajax.microsoft.com',
+    'code.jquery.com',
+    'use.typekit.net',
+    'cdn.jsdelivr.net',
+    'cdnjs.cloudflare.com'
+];
+
+chrome.runtime.onInstalled.addListener(async (details) => {
   chrome.action.setBadgeText({
     text: "",
   });
-  setNumTimesUsed(0);
+  if (details.reason !== 'update') {
+    await chrome.storage.sync.set({
+      numTimesUsed: 0,
+      blacklist: DEFAULT_BLACKLIST.join("\n")
+    });
+  } else if (details.reason === 'update') {
+    const previousVersion = new Version(details.previousVersion);
+    console.log(`Previous Version = ${previousVersion.toString()}`);
+    if (previousVersion.lt('1.2.0')) {
+      console.log('Adding blacklist to default options.');
+      await chrome.storage.sync.set({
+        numTimesUsed: 0,
+        blacklist: DEFAULT_BLACKLIST.join("\n")
+      });
+    }
+  }
 });
 
-async function refreshCss() {
+const getBlacklist = async () => {
+  return chrome.storage.sync.get({blacklist: DEFAULT_BLACKLIST.join("\n")})
+  .then(({blacklist}) => {
+    return blacklist
+    .split("\n")
+    .map(a => a.trim())
+    .filter(a => a !== '');
+  });
+};
+
+const getQuiet = async () => {
+  return chrome.storage.sync.get({quiet: false})
+  .then(({quiet}) => !!quiet);
+};
+
+async function getNumTimesUsed() {
+  return chrome.storage.sync.get({ numTimesUsed: 0 }).then(({ numTimesUsed }) => numTimesUsed);
+}
+
+async function setNumTimesUsed(numTimesUsed) {
+  return chrome.storage.sync.set({ numTimesUsed });
+}
+
+async function incrementNumTimesUsed() {
+  const numTimesUsed = await getNumTimesUsed();
+  await setNumTimesUsed(numTimesUsed + 1);
+  return numTimesUsed + 1;
+}
+
+async function registerUsage() {
+  const numTimesUsed = await incrementNumTimesUsed();
+  console.log(`Used ${numTimesUsed} times`);
+  if (numTimesUsed === 5 || DEBUG) {
+    chrome.tabs.create({url: 'page/rate.html'});
+  }
+}
+
+async function consoleMessage(tab, ...msg) {
+  if (! await getQuiet()) {
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      function: ({msg}) => {
+        const tstr = (new Date()).toLocaleTimeString();
+        const pfx = `%c🔃 Easy CSS Reloader%c | %c${tstr}%c | `;
+        console.log.apply(console.log, [`${pfx}${msg.splice(0, 1)}`, 'color: #eb2d57', null, 'color: #eb2d57', null, ...msg]);
+      },
+      args: [{msg}]
+    }).catch(e => console.error(e));
+  }
+}
+
+async function refreshCss(options) {
   const className = `reload_css_auto_remove_${(new Date()).getTime()}`;
-  const debug = false ? console.log : () => {};
+  const shouldLog = !options.quiet || !!(options.debug ?? false);
+  const debug = (shouldLog) ? console.log : () => {};
+  const pfxd = (...strs) => {
+    const tstr = (new Date()).toLocaleTimeString();
+    const pfx = `%c🔃 Easy CSS Reloader%c | %c${tstr}%c | `;
+    debug.apply(debug, [`${pfx}${strs.splice(0,1)}`, 'color: #eb2d57', null, 'color: #eb2d57', null, ...strs]);
+  }
+  const {blacklist, quiet} = options;
 
-  const refreshCssElements = async () => {
-    const cssElements = getCssElements();
-    const promises = [];
-
-    const pfx = '🔃 Easy CSS Reloader | ';
-
-    debug(`${pfx}Refreshing ${cssElements.length} stylesheet link elements`)
-    cssElements.forEach((el) => {
-      promises.push(updateElement(el));
-    });
-
-    debug(`${pfx}  > awaiting all to be re loaded`)
-    await Promise.all(promises);
-
-    debug(`${pfx}  > all ${cssElements.length} elements refreshed, removing remaining old elements`)
-    removeOldElements();
-
-    debug(`${pfx}  > done!`)
-    return cssElements.length;
-  };
-
-  const getCssElements = () => {
-    return Array.from(document.querySelectorAll('link[rel="stylesheet"]')).filter(isStylesheetElement);
+  const shouldUpdateStylesheetElement = (el) => {
+    const url = el.href;
+    const isBlacklisted = blacklist.some(bl => url.includes(bl));
+    if (isBlacklisted) {
+      pfxd(`%c  > ${url} was ${isBlacklisted ? '' : 'not '}%cblacklisted`, null, "background: black; color: #eb2d57")
+    }
+    return !isBlacklisted;
   };
 
   const isStylesheetElement = (el) => {
@@ -42,6 +113,36 @@ async function refreshCss() {
       el.type.trim() === '' ||
       el.type.toLowerCase().includes('css')
     );
+  };
+
+  const getCssElements = () => {
+    return Array
+      .from(document.querySelectorAll('link[rel="stylesheet"]'))
+      .filter(isStylesheetElement);
+  };
+
+  const filterCssElements = (els) => {
+    return els.filter(shouldUpdateStylesheetElement);
+  };
+
+  const refreshCssElements = async () => {
+    const allCssElements = getCssElements();
+    pfxd(`Refreshing ${allCssElements.length} stylesheet link elements`)
+    const cssElements = filterCssElements(allCssElements);
+    const promises = [];
+
+    cssElements.forEach((el) => {
+      promises.push(updateElement(el));
+    });
+
+    pfxd(`  > awaiting all to be re loaded`)
+    await Promise.all(promises);
+
+    pfxd(`  > all ${cssElements.length} elements refreshed, removing remaining old elements`)
+    removeOldElements();
+
+    pfxd(`  > done!`)
+    return cssElements.length;
   };
 
   const updateElement = async (el, maxWait = 2000) => {
@@ -92,42 +193,6 @@ async function refreshCss() {
   return await refreshCssElements();
 }
 
-function parseTimeString(timeString) {
-  const multipliers = {
-    s: 1000,
-    second: 1000,
-    seconds: 1000,
-    ms: 1,
-    millisecond: 1,
-    milliseconds: 1,
-    m: 1000 * 60,
-    minute: 1000 * 60,
-    minutes: 1000 * 60,
-    h: 1000 * 60 * 60,
-    hour: 1000 * 60 * 60,
-    hours: 1000 * 60 * 60,
-    d: 1000 * 60 * 60 * 24,
-    day: 1000 * 60 * 60 * 24,
-    days: 1000 * 60 * 60 * 24,
-  };
-  const matchRegex = /([0-9]+[0-9.]*) *(ms|milliseconds?|s|seconds?|m|minutes?|h|hours?|d|days?)?/;
-  const matches = `${timeString}`.match(matchRegex);
-  if (matches) {
-    let [proxy, num, unit] = matches;
-    if (num) {
-      num = parseFloat(num);
-      if (unit && typeof multipliers[unit] !== 'undefined') {
-        num *= multipliers[unit];
-      }
-      if (num <= 0) {
-        throw new Error('Timeout must be positive.');
-      }
-      return num;
-    }
-  }
-  throw new Error(`Invalid time string ${timeString} - please check CSS Easy Reload settings.`);
-}
-
 async function getCurrentTab() {
   let queryOptions = { active: true, lastFocusedWindow: true };
   // `tab` will either be a `tabs.Tab` instance or `undefined`.
@@ -141,11 +206,15 @@ async function refreshTab(tab) {
     text: '🔃',
   });
 
+  const blacklist = await getBlacklist();
+  const quiet = await getQuiet();
+
   const start = performance.now();
   const [{result}] = await chrome.scripting.executeScript({
     target: { tabId: tab.id },
-    function: refreshCss
-  });
+    function: refreshCss,
+    args: [{blacklist, quiet: quiet || !!timeouts[tab.id], debug: DEBUG}]
+  }).catch(e => console.error(e));
   await chrome.action.setBadgeText({
     tabId: tab.id,
     text: result ? `${result}🔃` : '🔃',
@@ -185,6 +254,7 @@ async function toggleAutoRefresh(tab, autoRefreshTimeout) {
 
 async function toggleAutoRefreshOff(tab) {
   console.log(`Stopping auto refresh`);
+  await consoleMessage(tab, `Stopping auto refresh`);
 
   clearInterval(timeouts[tab.id]);
   timeouts[tab.id] = null;
@@ -195,10 +265,14 @@ async function toggleAutoRefreshOff(tab) {
   });
 }
 
+async function autoRefresh(tab) {
+  await consoleMessage(tab, `Refreshing now..`);
+  await refreshTab(tab);
+}
+
 async function toggleAutoRefreshOn(tab, autoRefreshTimeout) {
   console.log(`Auto refreshing every ${autoRefreshTimeout}`);
-
-  await refreshTab(tab);
+  await consoleMessage(tab, `Auto refreshing CSS every ${autoRefreshTimeout}`);
 
   let time = 5000;
   try {
@@ -220,31 +294,11 @@ async function toggleAutoRefreshOn(tab, autoRefreshTimeout) {
         )
       )
     ) {
-      await refreshTab(tab);
+      autoRefresh(tab);
     }
   }, time);
-}
 
-async function getNumTimesUsed() {
-  return chrome.storage.sync.get({ numTimesUsed: 0 }).then(({ numTimesUsed }) => numTimesUsed);
-}
-
-async function setNumTimesUsed(numTimesUsed) {
-  return chrome.storage.sync.set({ numTimesUsed });
-}
-
-async function incrementNumTimesUsed() {
-  const numTimesUsed = await getNumTimesUsed();
-  await setNumTimesUsed(numTimesUsed + 1);
-  return numTimesUsed + 1;
-}
-
-async function registerUsage() {
-  const numTimesUsed = await incrementNumTimesUsed();
-  console.log(`Used ${numTimesUsed} times`);
-  if (numTimesUsed === 5 || DEBUG) {
-    chrome.tabs.create({url: 'page/rate.html'});
-  }
+  await autoRefresh(tab);
 }
 
 chrome.commands.onCommand.addListener(async (command) => {
