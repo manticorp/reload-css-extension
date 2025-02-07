@@ -5,6 +5,7 @@ zip.addLocalFile("manifest.json");
 zip.addLocalFolder("options", '/options');
 zip.addLocalFolder("scripts", '/scripts');
 zip.addLocalFolder("images", '/images');
+zip.addLocalFolder("page", '/page');
 zip.deleteFile("images/icon.ai");
 
 zip.writeZip("easy-css-reload.zip");
